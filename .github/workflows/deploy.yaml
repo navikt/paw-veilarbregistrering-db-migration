@@ -64,8 +64,7 @@ jobs:
       - name: Deploy to Dev
         uses: nais/deploy/actions/deploy@v1
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_KE
-          Y }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_KEY }}
           CLUSTER: dev-gcp
           DRY_RUN: false
           RESOURCE: .nais/nais-dev.yaml
