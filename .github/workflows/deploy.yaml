@@ -64,7 +64,8 @@ jobs:
       - name: Deploy to Dev
         uses: nais/deploy/actions/deploy@v1
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_KEY }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_KE
+          Y }}
           CLUSTER: dev-gcp
           DRY_RUN: false
           RESOURCE: .nais/nais-dev.yaml
@@ -85,7 +86,8 @@ jobs:
 #      - name: Deploy to production
 #        uses: nais/deploy/actions/deploy@v1
 #        env:
-#          APIKEY: ${{ secrets.NAIS_DEPLOY_KEY }}
+#          APIKEY: ${{ secrets.NAIS_DEPLOY_KE
+  Y }}
 #          CLUSTER: prod-fss
 #          DRY_RUN: false
 #          RESOURCE: nais/nais-prod.yaml

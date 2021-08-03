@@ -24,7 +24,7 @@ spec:
     type: Recreate
   prometheus:
     enabled: true
-    path: /actuator/prometheus
+    path: /internal/prometheus
   limits:
     cpu: 1
     memory: 2048Mi
