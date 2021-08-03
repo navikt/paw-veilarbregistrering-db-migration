@@ -22,6 +22,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>12</kotlin.compiler.jvmTarget>
+        <jvmTarget>12</jvmTarget>
+        <java.version>12</java.version>
+        <maven.compiler.release>12</maven.compiler.release>
     </properties>
 
     <repositories>
@@ -44,6 +47,12 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>1.5.10</version>
+                <configuration>
+                    <jvmTarget>${kotlin.compiler.jvmTarget}</jvmTarget>
+                    <args>
+                        <arg>-Xjsr305=strict</arg>
+                    </args>
+                </configuration>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -134,17 +143,14 @@
             <artifactId>okhttp</artifactId>
             <version>3.14.8</version>
         </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>1.5.10</version>
+            <version>1.3.72</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.jetbrains.kotlinx</groupId>
-            <artifactId>kotlinx-html-jvm</artifactId>
-            <version>0.7.2</version>
-        </dependency>
+
     </dependencies>
 
 </project>
