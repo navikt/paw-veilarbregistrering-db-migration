@@ -1,3 +1,5 @@
+package no.nav.veilarbregistreringmigrering
+
 import org.httprpc.sql.Parameters
 import java.sql.*
 import java.time.ZonedDateTime
@@ -24,7 +26,7 @@ fun hentStoersteId(tabellNavn: TabellNavn): Int {
     val connection = kobleTilDB()
     val statment = connection.createStatement()
     val resultSet = statment.executeQuery(
-        "select ${tabellNavn.idKolonneNavn} " +
+            "select ${tabellNavn.idKolonneNavn} " +
                 "from ${tabellNavn.name} " +
                 "order by ${tabellNavn.idKolonneNavn} desc limit 1"
     )

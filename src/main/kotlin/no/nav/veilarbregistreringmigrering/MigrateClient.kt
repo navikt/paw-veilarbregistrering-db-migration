@@ -1,19 +1,22 @@
+package no.nav.veilarbregistreringmigrering
+
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import java.lang.reflect.Type
+import java.lang.System.getenv
 
-
-const val BASE_URL = "http://localhost:8080/veilarbregistrering/api/migrering"
 
 class MigrateClient {
+    val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")
 
     fun hentOgSettInnData(tabell: TabellNavn, sisteIndex: Int) {
         val request: Request = Request.Builder()
-            .url("${BASE_URL}?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
+            .url("$VEILARBREGISTRERING_URL?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
             .header("accept", "application/json")
+            .header("x-token", getenv("MIGRATION_TOKEN"))
             .build()
 
         try {

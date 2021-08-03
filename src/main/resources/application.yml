@@ -1,0 +1,28 @@
+spring:
+  main:
+    banner-mode: off
+  flyway:
+    table: schema_version
+  datasource:
+    url: jdbc:postgresql://localhost:5432/veilarbregistrering
+    username: veilarbregistrering_user
+    password: veilarbregistrering_password
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      base-path: /internal
+      exposure:
+        include: prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true

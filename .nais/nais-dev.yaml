@@ -1,0 +1,54 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: veilarbregistrering
+  namespace: paw
+  labels:
+    team: paw
+spec:
+  leaderElection: true
+  image: {{image}}
+  port: 8080
+  liveness:
+    path: /isalive
+    initialDelay: 70
+    timeout: 2
+  readiness:
+    path: /isready
+    initialDelay: 70
+    timeout: 2
+  replicas:
+    min: 1
+    max: 1
+  strategy:
+    type: Recreate
+  prometheus:
+    enabled: true
+    path: /actuator/prometheus
+  limits:
+    cpu: 1
+    memory: 2048Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+  env:
+    - name: VEILARBREGISTRERING_URL
+      value: https://veilarbregistrering.dev.intern.nav.no
+  filesFrom:
+    - secret: migration-token
+
+  accessPolicy:
+    outbound:
+      external:
+        - host: veilarbregistrering.dev.intern.nav.no
+
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_12
+        tier: db-f1-micro
+        diskSize: 10
+        diskAutoresize: true
+        databases:
+          - name: veilarbregistrering
+            envVarPrefix: PAWVEILARBREGISTRERING
