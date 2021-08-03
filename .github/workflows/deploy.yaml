@@ -85,8 +85,7 @@ jobs:
 #      - name: Deploy to production
 #        uses: nais/deploy/actions/deploy@v1
 #        env:
-#          APIKEY: ${{ secrets.NAIS_DEPLOY_KE
-  Y }}
+#          APIKEY: ${{ secrets.NAIS_DEPLOY_KEY }}
 #          CLUSTER: prod-fss
 #          DRY_RUN: false
 #          RESOURCE: nais/nais-prod.yaml
