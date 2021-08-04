@@ -1,6 +1,5 @@
 package no.nav.veilarbregistreringmigrering
 
-import no.nav.veilarbregistreringmigrering.LeaderElectionClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -18,10 +17,10 @@ class Server(@Autowired val leaderElectionClient: LeaderElectionClient) {
         }
 
 
-//        val migrateClient = no.nav.veilarbregistreringmigrering.MigrateClient()
-//        no.nav.veilarbregistreringmigrering.TabellNavn.values().forEach {
-//            val sisteIndex = no.nav.veilarbregistreringmigrering.hentStoersteId(it)
-//            migrateClient.hentOgSettInnData(it, sisteIndex)
-//        }
+        val migrateClient = MigrateClient()
+        TabellNavn.values().forEach {
+            val sisteIndex = hentStoersteId(it)
+            migrateClient.hentOgSettInnData(it, sisteIndex)
+        }
     }
 }
