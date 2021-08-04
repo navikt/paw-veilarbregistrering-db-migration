@@ -4,9 +4,9 @@ spring:
   flyway:
     table: schema_version
   datasource:
-    url: jdbc:postgresql://localhost:5432/veilarbregistrering
-    username: veilarbregistrering_user
-    password: veilarbregistrering_password
+    url: jdbc:postgresql://${PAWVEILARBREGISTRERING_HOSTNAME}:${PAWVEILARBREGISTRERING_PORT}/veilarbregistrering
+    username: ${PAWVEILARBREGISTRERING_USERNAME}
+    password:  ${PAWVEILARBREGISTRERING_PASSWORD}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
