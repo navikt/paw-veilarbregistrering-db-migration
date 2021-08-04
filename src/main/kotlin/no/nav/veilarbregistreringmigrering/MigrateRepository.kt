@@ -19,7 +19,7 @@ private fun getRequiredProperty(prop: String): String = System.getenv(prop)
 
 
 private fun kobleTilDB(): Connection = DriverManager.getConnection(
-    "jdbc:postgresql://${getRequiredProperty("PAWVEILARBREGISTRERING_HOST")}:${getRequiredProperty("PAWVEILARBREGISTRERING_PORT")}/veilarbregistrering",
+    "jdbc:postgresql://${getRequiredProperty("PAWVEILARBREGISTRERING_HOST")}:${getRequiredProperty("PAWVEILARBREGISTRERING_PORT")}/${getRequiredProperty("PAWVEILARBREGISTRERING_DATABASE")}",
     getRequiredProperty("PAWVEILARBREGISTRERING_USERNAME"),
     getRequiredProperty("PAWVEILARBREGISTRERING_PASSWORD"),
 )

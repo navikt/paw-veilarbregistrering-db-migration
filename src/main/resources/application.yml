@@ -4,7 +4,7 @@ spring:
   flyway:
     table: schema_version
   datasource:
-    url: jdbc:postgresql://${PAWVEILARBREGISTRERING_HOSTNAME}:${PAWVEILARBREGISTRERING_PORT}/veilarbregistrering
+    url: jdbc:postgresql://${PAWVEILARBREGISTRERING_HOST}:${PAWVEILARBREGISTRERING_PORT}/${PAWVEILARBREGISTRERING_DATABASE}
     username: ${PAWVEILARBREGISTRERING_USERNAME}
     password:  ${PAWVEILARBREGISTRERING_PASSWORD}
     hikari:
