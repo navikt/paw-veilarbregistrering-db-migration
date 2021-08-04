@@ -35,7 +35,7 @@ spec:
   env:
     - name: VEILARBREGISTRERING_URL
       value: https://veilarbregistrering.dev.intern.nav.no
-  filesFrom:
+  envFrom:
     - secret: migration-token
 
   accessPolicy:
