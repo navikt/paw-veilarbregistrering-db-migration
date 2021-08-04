@@ -11,7 +11,7 @@ open class LeaderElectionClient {
 
     private fun getJSONFromUrl(url: String): JSONObject {
         val request: Request = Request.Builder()
-            .url(url)
+            .url("http://${url}")
             .header("accept", "application/json")
             .build()
 
