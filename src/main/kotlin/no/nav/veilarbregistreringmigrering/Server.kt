@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class Server(@Autowired val leaderElectionClient: LeaderElectionClient) {
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 5000)
     fun migrate() {
         // Lese pg-db, finne tabeller og kolonnenavn
         // Autorisasjon (header som leses) - hentes i veilarbregistrering fra Google secret manager
