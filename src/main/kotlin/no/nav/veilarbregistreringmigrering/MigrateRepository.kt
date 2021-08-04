@@ -15,11 +15,13 @@ enum class TabellNavn(val idKolonneNavn: String) {
     OPPGAVE("ID"),
 }
 
+private fun getRequiredProperty(prop: String): String = System.getenv(prop)
+
 
 private fun kobleTilDB(): Connection = DriverManager.getConnection(
-    "jdbc:postgresql://localhost:5432/veilarbregistrering",
-    "veilarbregistrering_user",
-    "veilarbregistrering_password"
+    "jdbc:postgresql://${getRequiredProperty("PAWVEILARBREGISTRERING_HOST")}:${getRequiredProperty("PAWVEILARBREGISTRERING_PORT")}/veilarbregistrering",
+    getRequiredProperty("PAWVEILARBREGISTRERING_USERNAME"),
+    getRequiredProperty("PAWVEILARBREGISTRERING_PASSWORD"),
 )
 
 fun hentStoersteId(tabellNavn: TabellNavn): Int {
