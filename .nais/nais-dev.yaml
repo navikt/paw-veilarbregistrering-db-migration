@@ -34,12 +34,15 @@ spec:
 
   env:
     - name: VEILARBREGISTRERING_URL
-      value: https://veilarbregistrering.dev.intern.nav.no
+      value: http://pto-proxy.pto.svc.cluster.local/proxy/veilarbregistrering
   envFrom:
     - secret: migration-token
 
   accessPolicy:
     outbound:
+      rules:
+        - application: pto-proxy
+          namespace: pto
       external:
         - host: veilarbregistrering.dev.intern.nav.no
 
