@@ -16,6 +16,7 @@ class MigrateClient {
         val request: Request = Request.Builder()
             .url("$VEILARBREGISTRERING_URL/api/migrering/hentNesteFraTabell?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
             .header("accept", "application/json")
+            .header("x_consumerId", "veilarbregistrering")
             .header("x-token", getenv("MIGRATION_TOKEN"))
             .build()
 
