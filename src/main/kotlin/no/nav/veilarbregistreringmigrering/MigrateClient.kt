@@ -14,7 +14,7 @@ class MigrateClient {
 
     fun hentOgSettInnData(tabell: TabellNavn, sisteIndex: Int) {
         val request: Request = Request.Builder()
-            .url("$VEILARBREGISTRERING_URL/api/migrering/hentNesteFraTabell?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
+            .url("$VEILARBREGISTRERING_URL/api/migrering?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
             .header("accept", "application/json")
             .header("x_consumerId", "veilarbregistrering")
             .header("x-token", getenv("MIGRATION_TOKEN"))
