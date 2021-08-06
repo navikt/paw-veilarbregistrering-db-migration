@@ -74,9 +74,11 @@ fun settInnRader(tabell: TabellNavn, rader: List<MutableMap<String, Any>>) {
         }
 
         // Bygg opp en (Java Persistence API) SQL string for den gitte tabellen
-        val jpaSQL = "INSERT INTO ${tabell.name} " +
-                "(${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) " +
-                "VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})"
+        val jpaSQL =
+            """
+            INSERT INTO ${tabell.name} (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
+            VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
+            """
 
         // Send SQL-strengen inn til et Parameters-objekt fra httprpc (named parameteres support for JDBC)
         val parameters: Parameters = Parameters.parse(jpaSQL)
