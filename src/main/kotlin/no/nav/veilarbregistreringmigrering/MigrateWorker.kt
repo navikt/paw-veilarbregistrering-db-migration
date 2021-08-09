@@ -5,8 +5,8 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
-class Server(@Autowired val leaderElectionClient: LeaderElectionClient) {
-    //@Scheduled(fixedDelay = 60000)
+class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @Autowired val repository: MigrateRepository, @Autowired val migrateClient: MigrateClient) {
+    @Scheduled(fixedDelay = 20000)
     fun migrate() {
         // Lese pg-db, finne tabeller og kolonnenavn
         // Autorisasjon (header som leses) - hentes i veilarbregistrering fra Google secret manager
@@ -16,11 +16,10 @@ class Server(@Autowired val leaderElectionClient: LeaderElectionClient) {
             return
         }
 
-
-        val migrateClient = MigrateClient()
         TabellNavn.values().forEach {
-            val sisteIndex = hentStoersteId(it)
-            migrateClient.hentOgSettInnData(it, sisteIndex)
+            val sisteIndex = repository.hentStoersteId(it)
+//            val rader = migrateClient.hentNesteBatchFraTabell(it, sisteIndex)
+//            repository.settInnRader(it, rader)
         }
     }
 }
