@@ -110,15 +110,15 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
             val jpaSQL =
                 if (tabell == TabellNavn.BRUKER_PROFILERING)
                     """
-            INSERT INTO ${tabell.name} (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
-            VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
-
-            """ else
-                    """
             INSERT INTO bruker_profilering (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
             VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
             ON CONFLICT (bruker_registrering_id, profilering_type)
             DO NOTHING
+            """
+                else
+                    """
+            INSERT INTO ${tabell.name} (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
+            VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
             """
 
             // Send SQL-strengen inn til et Parameters-objekt fra httprpc (named parameteres support for JDBC)
