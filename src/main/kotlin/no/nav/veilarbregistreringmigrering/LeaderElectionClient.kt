@@ -2,14 +2,14 @@ package no.nav.veilarbregistreringmigrering
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.springframework.boot.json.GsonJsonParser
 import java.net.InetAddress
-import org.springframework.boot.configurationprocessor.json.JSONObject
 import org.springframework.stereotype.Component
 
 @Component
 open class LeaderElectionClient {
 
-    private fun getJSONFromUrl(url: String): JSONObject {
+    private fun getJSONFromUrl(url: String): String {
         val request: Request = Request.Builder()
             .url("http://${url}")
             .header("accept", "application/json")
@@ -21,21 +21,20 @@ open class LeaderElectionClient {
         restClient.newCall(request).execute().use {
             if (!it.isSuccessful()) {
                 throw RuntimeException(
-                    "Henting av rader feilet med statuskode: " + it.code()
+                    "Henting av leader election med statuskode: " + it.code()
                         .toString() + " - " + it
                 )
 
             }
-           return JSONObject(it?.body()?.string())
-
+           return it.body()?.string() ?: throw IllegalStateException("Respons fra $url skulle hatt en body ")
         }
 
     }
 
     open fun isLeader(): Boolean {
         val electorPath = System.getenv("ELECTOR_PATH")
-        val leaderJson: JSONObject = getJSONFromUrl(electorPath)
-        val leader = leaderJson.getString("name")
+        val leaderJson = GsonJsonParser().parseMap(getJSONFromUrl(electorPath))
+        val leader = leaderJson["name"]
         val hostname: String = InetAddress.getLocalHost().hostName
         println(hostname)
         return hostname == leader
