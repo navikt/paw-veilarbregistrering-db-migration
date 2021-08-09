@@ -7,7 +7,7 @@ import java.net.InetAddress
 import org.springframework.stereotype.Component
 
 @Component
-open class LeaderElectionClient {
+class LeaderElectionClient {
 
     private fun getJSONFromUrl(url: String): String {
         val request: Request = Request.Builder()
@@ -19,7 +19,7 @@ open class LeaderElectionClient {
             .followRedirects(false)
             .build()
         restClient.newCall(request).execute().use {
-            if (!it.isSuccessful()) {
+            if (!it.isSuccessful) {
                 throw RuntimeException(
                     "Henting av leader election med statuskode: " + it.code()
                         .toString() + " - " + it
@@ -31,7 +31,7 @@ open class LeaderElectionClient {
 
     }
 
-    open fun isLeader(): Boolean {
+    fun isLeader(): Boolean {
         val electorPath = System.getenv("ELECTOR_PATH")
         val leaderJson = GsonJsonParser().parseMap(getJSONFromUrl(electorPath))
         val leader = leaderJson["name"]
