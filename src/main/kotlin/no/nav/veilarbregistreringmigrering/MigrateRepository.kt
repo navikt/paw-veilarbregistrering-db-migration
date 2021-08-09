@@ -33,14 +33,35 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
 
     fun hentStoersteId(tabellNavn: TabellNavn): Int {
         val connection = datasource.connection
-        val statment = connection.createStatement()
-        val resultSet = statment.executeQuery(
+        val statement = connection.createStatement()
+        val resultSet = statement.executeQuery(
             "select ${tabellNavn.idKolonneNavn} " +
                     "from ${tabellNavn.name} " +
                     "order by ${tabellNavn.idKolonneNavn} desc limit 1"
         )
+
+
         return when (resultSet.next()) {
-            true -> resultSet.getInt(tabellNavn.idKolonneNavn)
+            true -> {
+                val id = resultSet.getInt(tabellNavn.idKolonneNavn)
+
+                /* I dette tilfellet (bruker_profilering) har man 3 rader per id (bruker_registrering_id).
+                Må starte fra forrige id dersom vi ikke har et "komplett sett" */
+                if (tabellNavn == TabellNavn.BRUKER_PROFILERING) {
+                    val raderMedSisteId = connection.createStatement()
+                        .executeQuery("select count(*) as $ANTALL from ${tabellNavn.name} where ${tabellNavn.idKolonneNavn} = $id")
+                        .getInt(ANTALL)
+
+                    return if (raderMedSisteId < 3) {
+                        println("Fant $raderMedSisteId rader for Id: [${id}]")
+                        id - 1
+                    } else {
+                        println("Fant $raderMedSisteId rader for Id: [${id}]")
+                        id
+                    }
+                }
+                id
+            }
             false -> 0
         }.also { connection.close() }
     }
@@ -87,9 +108,17 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
 
             // Bygg opp en (Java Persistence API) SQL string for den gitte tabellen
             val jpaSQL =
-                """
+                if (tabell == TabellNavn.BRUKER_PROFILERING)
+                    """
             INSERT INTO ${tabell.name} (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
             VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
+
+            """ else
+                    """
+            INSERT INTO bruker_profilering (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
+            VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
+            ON CONFLICT (bruker_registrering_id, profilering_type)
+            DO NOTHING
             """
 
             // Send SQL-strengen inn til et Parameters-objekt fra httprpc (named parameteres support for JDBC)
@@ -111,5 +140,9 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
             System.err.println(e.javaClass.name + ": " + e.message)
             exitProcess(0)
         }
+    }
+
+    companion object {
+        private const val ANTALL = "antall"
     }
 }

@@ -18,8 +18,8 @@ class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @
 
         TabellNavn.values().forEach {
             val sisteIndex = repository.hentStoersteId(it)
-//            val rader = migrateClient.hentNesteBatchFraTabell(it, sisteIndex)
-//            repository.settInnRader(it, rader)
+            val rader = migrateClient.hentNesteBatchFraTabell(it, sisteIndex)
+            repository.settInnRader(it, rader)
         }
     }
 }
