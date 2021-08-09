@@ -48,9 +48,9 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
                 /* I dette tilfellet (bruker_profilering) har man 3 rader per id (bruker_registrering_id).
                 Må starte fra forrige id dersom vi ikke har et "komplett sett" */
                 if (tabellNavn == TabellNavn.BRUKER_PROFILERING) {
-                    val raderMedSisteId = connection.createStatement()
+                    val resultat = connection.createStatement()
                         .executeQuery("select count(*) as $ANTALL from ${tabellNavn.name} where ${tabellNavn.idKolonneNavn} = $id")
-                        .getInt(ANTALL)
+                    val raderMedSisteId = if (resultat.next()) resultat.getInt(ANTALL) else 0
 
                     return if (raderMedSisteId < 3) {
                         println("Fant $raderMedSisteId rader for Id: [${id}]")
