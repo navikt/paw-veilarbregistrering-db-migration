@@ -8,23 +8,16 @@ import org.springframework.stereotype.Component
 import java.io.IOException
 import java.lang.reflect.Type
 import java.lang.System.getenv
+import java.util.concurrent.TimeUnit
 
 @Component
 class MigrateClient {
     val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")
 
     fun hentNesteBatchFraTabell(tabell: TabellNavn, sisteIndex: Int): List<MutableMap<String, Any>> {
-        val request: Request = Request.Builder()
-            .url("$VEILARBREGISTRERING_URL/api/migrering?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
-            .header("accept", "application/json")
-            .header("x_consumerId", "veilarbregistrering")
-            .header("x-token", getenv("MIGRATION_TOKEN"))
-            .build()
+        val request: Request = buildRequest("$VEILARBREGISTRERING_URL/api/migrering?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
 
         try {
-            val restClient = OkHttpClient.Builder()
-                .followRedirects(false)
-                .build()
             restClient.newCall(request).execute().use { response ->
                 if (response.code() == 404) {
                     println("Fant ikke tabell")
@@ -44,5 +37,20 @@ class MigrateClient {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
+    }
+
+    companion object {
+        private fun buildRequest(url: String) =
+            Request.Builder()
+                .url(url)
+                .header("accept", "application/json")
+                .header("x_consumerId", "veilarbregistrering")
+                .header("x-token", getenv("MIGRATION_TOKEN"))
+                .build()
+
+        private val restClient = OkHttpClient.Builder()
+            .readTimeout(60L, TimeUnit.SECONDS)
+            .followRedirects(false)
+            .build()
     }
 }
