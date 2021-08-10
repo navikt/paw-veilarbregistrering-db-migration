@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.stereotype.Component
 import java.io.IOException
-import java.lang.reflect.Type
 import java.lang.System.getenv
 import java.util.concurrent.TimeUnit
 
@@ -29,15 +28,30 @@ class MigrateClient {
                     )
                 }
 
-                val typeToken: Type = object : TypeToken<List<MutableMap<String, Any>>>() {}.type
-                val databaserader: List<MutableMap<String, Any>> =  Gson().fromJson(response.body()?.string(), typeToken)
-                println(databaserader)
-                return databaserader
+                response.body()?.let { body ->
+                    val databaserader = Gson().fromJson<List<MutableMap<String, Any>>>(body.string())
+                    println(databaserader)
+                    return databaserader
+                } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
             }
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
     }
+
+    fun hentSjekkerForTabell(tabell: TabellNavn): Map<String, Any> {
+        try {
+            restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/sjekk?tabellNavn=${tabell.name}"))
+                .execute().use { response ->
+                response.body()?.let {
+                    return Gson().fromJson(it.string())
+                } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
+            }
+        } catch (e: IOException) {
+            throw RuntimeException(e)
+        }
+    }
+
 
     companion object {
         private fun buildRequest(url: String) =
@@ -52,5 +66,7 @@ class MigrateClient {
             .readTimeout(60L, TimeUnit.SECONDS)
             .followRedirects(false)
             .build()
+
+        inline fun <reified T> Gson.fromJson(json: String): T = fromJson(json, object: TypeToken<T>() {}.type)
     }
 }
