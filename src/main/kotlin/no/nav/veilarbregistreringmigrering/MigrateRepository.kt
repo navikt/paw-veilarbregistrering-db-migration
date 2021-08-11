@@ -1,7 +1,9 @@
 package no.nav.veilarbregistreringmigrering
 
+import no.nav.veilarbregistreringmigrering.TabellNavn.*
 import org.httprpc.sql.Parameters
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.*
 import java.time.ZonedDateTime
@@ -47,7 +49,7 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
 
                 /* I dette tilfellet (bruker_profilering) har man 3 rader per id (bruker_registrering_id).
                 Må starte fra forrige id dersom vi ikke har et "komplett sett" */
-                if (tabellNavn == TabellNavn.BRUKER_PROFILERING) {
+                if (tabellNavn == BRUKER_PROFILERING) {
                     val resultat = connection.createStatement()
                         .executeQuery("select count(*) as $ANTALL from ${tabellNavn.name} where ${tabellNavn.idKolonneNavn} = $id")
                     val raderMedSisteId = if (resultat.next()) resultat.getInt(ANTALL) else 0
@@ -75,7 +77,7 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
 
             // Behandle kolonner vi vet må konverteres
             when (tabell) {
-                TabellNavn.BRUKER_REGISTRERING, TabellNavn.SYKMELDT_REGISTRERING -> {
+                BRUKER_REGISTRERING, SYKMELDT_REGISTRERING -> {
                     rader.forEach {
                         it["OPPRETTET_DATO"] = ZonedDateTime.parse(it["OPPRETTET_DATO"].toString()).toLocalDateTime()
                     }
@@ -102,13 +104,13 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
                     }
                 }
 
-                TabellNavn.BRUKER_PROFILERING, TabellNavn.MANUELL_REGISTRERING -> {
+                BRUKER_PROFILERING, MANUELL_REGISTRERING -> {
                 }
             }
 
             // Bygg opp en (Java Persistence API) SQL string for den gitte tabellen
             val jpaSQL =
-                if (tabell == TabellNavn.BRUKER_PROFILERING)
+                if (tabell == BRUKER_PROFILERING)
                     """
             INSERT INTO bruker_profilering (${rader[0].keys.joinToString(postfix = "", prefix = "", separator = ",")}) 
             VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
@@ -142,7 +144,72 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
         }
     }
 
+    fun hentSjekkerForTabell(tabellNavn: TabellNavn): List<Map<String, Any>> {
+        val sql = when (tabellNavn) {
+            BRUKER_PROFILERING -> profileringSjekkSql
+            BRUKER_REGISTRERING -> brukerRegistreringSjekkSql
+            SYKMELDT_REGISTRERING -> sykmeldtRegistreringSjekkSql
+            MANUELL_REGISTRERING -> manuellRegistreringSjekkSql
+            OPPGAVE -> oppgaveSjekkSql
+            BRUKER_REAKTIVERING -> brukerReaktiveringSjekkSql
+            REGISTRERING_TILSTAND -> registreringstilstandSjekkSql
+        }
+
+        return JdbcTemplate(datasource).queryForList(sql)
+    }
+
     companion object {
         private const val ANTALL = "antall"
+
+        private const val brukerReaktiveringSjekkSql = """
+        select count(*) as antall_rader,
+        count(distinct aktor_id) as unike_aktor_id
+        from registrering_tilstand
+        """
+
+        private const val registreringstilstandSjekkSql = """
+        select count(*) as antall_rader,
+        count(distinct bruker_registrering_id) as unike_brukerregistrering_id
+        from registrering_tilstand
+        """
+        private const val profileringSjekkSql = """
+        select count(*) as antall_rader, count(distinct verdi) as unike_verdier, count(distinct profilering_type) as unike_typer 
+        from bruker_profilering          
+        """
+
+        private const val brukerRegistreringSjekkSql = """
+        select count(*) as antall_rader, 
+        count(distinct foedselsnummer) as unike_foedselsnummer, 
+        count(distinct aktor_id) as unike_aktorer, 
+        count(distinct jobbhistorikk) as unike_jobbhistorikk, 
+        count(distinct yrkespraksis) as unike_yrkespraksis, 
+        floor(avg(konsept_id)) as gjsnitt_konsept_id 
+        from bruker_registrering
+        """
+
+        private const val sykmeldtRegistreringSjekkSql = """
+        select count(*) as antall_rader,
+        count(distinct fremtidig_situasjon) as unike_fremtidig_situasjon,
+        count(distinct aktor_id) as unike_aktorer,
+        count(distinct utdanning_bestatt) as unike_utdanning_bestatt,
+        count(distinct andre_utfordringer) as unike_andre_utfordringer,
+        round(avg(cast(nus_kode as int)), 2) as gjsnitt_nus from sykmeldt_registrering
+        """
+
+        private const val manuellRegistreringSjekkSql = """
+        select count(*) as antall_rader,
+        count(distinct veileder_ident) as unike_veiledere,
+        count(distinct veileder_enhet_id) as unike_enheter,
+        count(distinct registrering_id) as unike_registreringer, 
+        count(distinct bruker_registrering_type) as unike_reg_typer from manuell_registrering
+        """
+
+        private const val oppgaveSjekkSql = """
+        select count(*) as antall_rader,
+        count(distinct aktor_id) as unike_aktorer,
+        count(distinct oppgavetype) as unike_oppgavetyper,
+        count(distinct ekstern_oppgave_id) as unike_oppgave_id,
+        floor(avg(ekstern_oppgave_id)) as gjsnitt_oppgave_id from oppgave
+        """
     }
 }

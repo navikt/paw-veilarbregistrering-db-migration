@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping
-class StatusController {
+class StatusController( private val migrationStatusService: MigrationStatusService) {
 
     @GetMapping("/isready")
     fun isReady() = ResponseEntity.ok("OK")
@@ -15,4 +15,6 @@ class StatusController {
     @GetMapping("/isalive")
     fun isHealthy() = ResponseEntity.ok("OK")
 
+    @GetMapping("/compareDatabases")
+    fun compareDatabases(): List<Tabellsjekk> = migrationStatusService.compareDatabaseStatus()
 }
