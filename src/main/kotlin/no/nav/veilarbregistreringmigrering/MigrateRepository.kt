@@ -1,13 +1,9 @@
 package no.nav.veilarbregistreringmigrering
 
 import no.nav.veilarbregistreringmigrering.TabellNavn.*
-import org.httprpc.sql.Parameters
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
-import java.sql.*
 import java.time.ZonedDateTime
-import javax.sql.DataSource
 import kotlin.system.exitProcess
 
 enum class TabellNavn(val idKolonneNavn: String) {
@@ -21,7 +17,7 @@ enum class TabellNavn(val idKolonneNavn: String) {
 }
 
 @Repository
-class MigrateRepository(@Autowired val datasource: DataSource) {
+class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
 //    private fun kobleTilDB(): Connection = DriverManager.getConnection(
 //        "jdbc:postgresql://${getRequiredProperty("PAWVEILARBREGISTRERING_HOST")}:${getRequiredProperty("PAWVEILARBREGISTRERING_PORT")}/${
@@ -34,24 +30,21 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
 //    )
 
     fun hentStoersteId(tabellNavn: TabellNavn): Int {
-        val connection = datasource.connection
-        val statement = connection.createStatement()
-        val resultSet = statement.executeQuery(
+
+        val rowSet = db.jdbcTemplate.queryForRowSet(
             "select ${tabellNavn.idKolonneNavn} " +
                     "from ${tabellNavn.name} " +
                     "order by ${tabellNavn.idKolonneNavn} desc limit 1"
         )
 
-
-        return when (resultSet.next()) {
+        return when (rowSet.next()) {
             true -> {
-                val id = resultSet.getInt(tabellNavn.idKolonneNavn)
+                val id = rowSet.getInt(tabellNavn.idKolonneNavn)
 
                 /* I dette tilfellet (bruker_profilering) har man 3 rader per id (bruker_registrering_id).
                 Må starte fra forrige id dersom vi ikke har et "komplett sett" */
                 if (tabellNavn == BRUKER_PROFILERING) {
-                    val resultat = connection.createStatement()
-                        .executeQuery("select count(*) as $ANTALL from ${tabellNavn.name} where ${tabellNavn.idKolonneNavn} = $id")
+                    val resultat = db.jdbcTemplate.queryForRowSet("select count(*) as $ANTALL from ${tabellNavn.name} where ${tabellNavn.idKolonneNavn} = $id")
                     val raderMedSisteId = if (resultat.next()) resultat.getInt(ANTALL) else 0
 
                     return if (raderMedSisteId < 3) {
@@ -65,15 +58,13 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
                 id
             }
             false -> 0
-        }.also { connection.close() }
+        }
     }
 
 
     fun settInnRader(tabell: TabellNavn, rader: List<MutableMap<String, Any>>) {
         try {
             if (rader.isEmpty()) return
-            // Koble til db
-            val connection: Connection = datasource.connection
 
             // Behandle kolonner vi vet må konverteres
             when (tabell) {
@@ -83,14 +74,14 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
                     }
                 }
 
-                TabellNavn.BRUKER_REAKTIVERING -> {
+                BRUKER_REAKTIVERING -> {
                     rader.forEach {
                         it["REAKTIVERING_DATO"] =
                             ZonedDateTime.parse(it["REAKTIVERING_DATO"].toString()).toLocalDateTime()
                     }
                 }
 
-                TabellNavn.REGISTRERING_TILSTAND -> {
+                REGISTRERING_TILSTAND -> {
                     rader.forEach {
                         it["OPPRETTET"] = ZonedDateTime.parse(it["OPPRETTET"].toString()).toLocalDateTime()
                         if (it["SIST_ENDRET"] != null) it["SIST_ENDRET"] =
@@ -98,7 +89,7 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
                     }
                 }
 
-                TabellNavn.OPPGAVE -> {
+                OPPGAVE -> {
                     rader.forEach {
                         it["OPPRETTET"] = ZonedDateTime.parse(it["OPPRETTET"].toString()).toLocalDateTime()
                     }
@@ -123,19 +114,7 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
             VALUES(${rader[0].keys.joinToString(prefix = ":", postfix = "", separator = ", :")})
             """
 
-            // Send SQL-strengen inn til et Parameters-objekt fra httprpc (named parameteres support for JDBC)
-            val parameters: Parameters = Parameters.parse(jpaSQL)
-
-            // Opprett en preparedstatment
-            val stmt = connection.prepareStatement(parameters.sql)
-
-            // Traverser hver rad vi har fått inn, map opp kolonneverdiene og legg inn raden i databasen
-            rader.forEach {
-                parameters.apply(stmt, it)
-                println(stmt)
-                stmt.execute()
-            }
-            connection.close()
+            db.batchUpdate(jpaSQL, rader.toTypedArray())
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -155,7 +134,7 @@ class MigrateRepository(@Autowired val datasource: DataSource) {
             REGISTRERING_TILSTAND -> registreringstilstandSjekkSql
         }
 
-        return JdbcTemplate(datasource).queryForList(sql)
+        return db.jdbcTemplate.queryForList(sql)
     }
 
     companion object {
