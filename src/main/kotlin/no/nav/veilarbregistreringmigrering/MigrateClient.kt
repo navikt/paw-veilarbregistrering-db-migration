@@ -41,7 +41,7 @@ class MigrateClient {
 
     fun hentSjekkerForTabell(tabell: TabellNavn): Map<String, Any> {
         try {
-            restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/sjekk?tabellNavn=${tabell.name}"))
+            restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/sjekksum?tabellNavn=${tabell.name}"))
                 .execute().use { response ->
                 response.body()?.let {
                     return Gson().fromJson(it.string())
