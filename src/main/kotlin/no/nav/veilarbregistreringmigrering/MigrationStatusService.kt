@@ -10,7 +10,7 @@ class MigrationStatusService(
 
     fun compareDatabaseStatus(): List<Tabellsjekk> {
         val kilde = TabellNavn.values()
-            .associate { it to migrateClient.hentSjekkerForTabell(it) }
+            .associate { it to migrateClient.hentSjekkerForTabell(it)[0] }
 
         val destinasjon = TabellNavn.values()
             .associate { it to migrateRepository.hentSjekkerForTabell(it)[0] }
