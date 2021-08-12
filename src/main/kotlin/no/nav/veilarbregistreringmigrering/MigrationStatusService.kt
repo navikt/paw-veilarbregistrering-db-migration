@@ -21,12 +21,18 @@ class MigrationStatusService(
         return kilde.map { (tabell, resultat) ->
 
             val kolonnerSomIkkeMatcher: List<String> = resultat.filterNot { (kolonne, verdi) ->
-                verdi == destinasjon[tabell]?.get(kolonne) ?: false
+                sjekkSamsvar(verdi, destinasjon[tabell]?.get(kolonne))
             }.keys.toList()
 
             Tabellsjekk(tabell ,kolonnerSomIkkeMatcher.isEmpty(), kolonnerSomIkkeMatcher)
         }
 
     }
+
+    companion object {
+        private fun sjekkSamsvar(verdiKilde: Any, verdiDestinasjon: Any?): Boolean =
+            verdiKilde.toString().toDouble().compareTo(verdiDestinasjon?.toString()?.toDouble() ?: Double.MIN_VALUE) == 0
+    }
+
 }
 

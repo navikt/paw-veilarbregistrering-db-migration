@@ -44,8 +44,9 @@ class MigrateClient {
             restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/sjekksum?tabellNavn=${tabell.name}"))
                 .execute().use { response ->
                 response.body()?.let { body ->
-                    print(body)
-                    return Gson().fromJson(body.string())
+                    val str = body.string()
+                    println("${tabell.name}.json: $str")
+                    return Gson().fromJson(str)
                 } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
             }
         } catch (e: IOException) {
