@@ -11,17 +11,16 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class MigrateClient {
-    val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")
 
     fun hentNesteBatchFraTabell(tabell: TabellNavn, sisteIndex: Int): List<MutableMap<String, Any>> {
-        val request: Request = buildRequest("$VEILARBREGISTRERING_URL/api/migrering?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
+        val request: Request = buildRequest("${VEILARBREGISTRERING_URL}/api/migrering?tabellNavn=${tabell.name}&idSisthentet=${sisteIndex}")
 
         try {
             restClient.newCall(request).execute().use { response ->
                 if (response.code() == 404) {
                     println("Fant ikke tabell")
                 }
-                if (!response.isSuccessful()) {
+                if (!response.isSuccessful) {
                     throw RuntimeException(
                         "Henting av rader feilet med statuskode: " + response.code()
                             .toString() + " - " + response
@@ -41,7 +40,7 @@ class MigrateClient {
 
     fun hentSjekkerForTabell(tabell: TabellNavn): List<Map<String, Any>> {
         try {
-            restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/sjekksum?tabellNavn=${tabell.name}"))
+            restClient.newCall(buildRequest("${VEILARBREGISTRERING_URL}/api/migrering/sjekksum?tabellNavn=${tabell.name}"))
                 .execute().use { response ->
                 response.body()?.let { body ->
                     val str = body.string()
@@ -70,5 +69,6 @@ class MigrateClient {
             .build()
 
         inline fun <reified T> Gson.fromJson(json: String): T = fromJson(json, object: TypeToken<T>() {}.type)
+        val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")!!
     }
 }
