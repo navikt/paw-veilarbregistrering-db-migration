@@ -52,6 +52,10 @@ spec:
         tier: db-f1-micro
         diskSize: 10
         diskAutoresize: true
+        pointInTimeRecovery: true
+        maintenance:
+          day: 1
+          hour: 4
         databases:
           - name: veilarbregistrering
             envVarPrefix: PAWVEILARBREGISTRERING
