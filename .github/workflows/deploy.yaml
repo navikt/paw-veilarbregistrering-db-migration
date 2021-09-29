@@ -49,7 +49,7 @@ jobs:
           docker push ${IMAGE}
 
   deploy-dev:
-    name: Deploy to dev GCP
+    name: Deploy to dev
     needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
@@ -69,43 +69,43 @@ jobs:
           DRY_RUN: false
           RESOURCE: .nais/nais-dev.yaml
 
-#  deploy-prod:
-#    name: Deploy to prod-fss
-#    needs: deploy-dev
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#
-#      - name: Lag tag for image
-#        run: echo "TAG=$(git log -1 --pretty='%ad_%h' --date=format:'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-#
-#      - name: Lag full image referanse
-#        run: echo "IMAGE=$IMAGE_BASE:$TAG" >> $GITHUB_ENV
-#
-#      - name: Deploy to production
-#        uses: nais/deploy/actions/deploy@v1
-#        env:
-#          APIKEY: ${{ secrets.NAIS_DEPLOY_KEY }}
-#          CLUSTER: prod-fss
-#          DRY_RUN: false
-#          RESOURCE: nais/nais-prod.yaml
+  deploy-prod:
+    name: Deploy to prod
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
 
-#  release:
-#    name: Tag and release
-#    needs: deploy-prod
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#        name: Checkout
-#
-#      - name: Lag tag for release
-#        run: echo "TAG=$(git log -1 --pretty='%ad_%h' --date=format:'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-#
-#      - name: Create release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: release/prod@${{ env.TAG }}
-#          release_name: Release to prod
-#          prerelease: false
+      - name: Lag tag for image
+        run: echo "TAG=$(git log -1 --pretty='%ad_%h' --date=format:'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Lag full image referanse
+        run: echo "IMAGE=$IMAGE_BASE:$TAG" >> $GITHUB_ENV
+
+      - name: Deploy to production
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_KEY }}
+          CLUSTER: prod-gcp
+          DRY_RUN: true
+          RESOURCE: nais/nais-p.yaml
+
+  release:
+    name: Tag and release
+    needs: deploy-prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        name: Checkout
+
+      - name: Lag tag for release
+        run: echo "TAG=$(git log -1 --pretty='%ad_%h' --date=format:'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release/prod@${{ env.TAG }}
+          release_name: Release to prod
+          prerelease: false
