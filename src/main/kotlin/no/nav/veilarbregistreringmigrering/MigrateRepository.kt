@@ -48,10 +48,10 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
                     val raderMedSisteId = if (resultat.next()) resultat.getInt(ANTALL) else 0
 
                     return if (raderMedSisteId < 3) {
-                        println("Fant $raderMedSisteId rader for Id: [${id}]")
+                        log.info("Fant $raderMedSisteId rader for Id: [${id}]")
                         id - 1
                     } else {
-                        println("Fant $raderMedSisteId rader for Id: [${id}]")
+                        log.info("Fant $raderMedSisteId rader for Id: [${id}]")
                         id
                     }
                 }
@@ -118,7 +118,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            System.err.println(e.javaClass.name + ": " + e.message)
+            log.error(e.javaClass.name + ": " + e.message)
             exitProcess(0)
         }
     }
@@ -139,6 +139,8 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
     companion object {
         private const val ANTALL = "antall"
+
+        private val log = loggerFor<MigrateRepository>()
 
         private const val brukerReaktiveringSjekkSql = """
         select count(*) as antall_rader,

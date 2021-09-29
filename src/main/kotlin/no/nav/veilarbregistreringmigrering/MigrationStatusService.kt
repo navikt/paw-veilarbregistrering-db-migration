@@ -15,8 +15,8 @@ class MigrationStatusService(
         val destinasjon = TabellNavn.values()
             .associate { it to migrateRepository.hentSjekkerForTabell(it)[0] }
 
-        println("Hentet statuser fra veilarbregistrering: $kilde")
-        println("Hentet status fra lokal database: $destinasjon")
+        log.info("Hentet statuser fra veilarbregistrering: $kilde")
+        log.info("Hentet status fra lokal database: $destinasjon")
 
         return kilde.map { (tabell, resultat) ->
 
@@ -30,6 +30,7 @@ class MigrationStatusService(
     }
 
     companion object {
+        private val log = loggerFor<MigrationStatusService>()
         private fun sjekkSamsvar(verdiKilde: Any, verdiDestinasjon: Any?): Boolean =
             verdiKilde.toString().toDouble().compareTo(verdiDestinasjon?.toString()?.toDouble() ?: Double.MIN_VALUE) == 0
     }

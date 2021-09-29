@@ -36,7 +36,11 @@ class LeaderElectionClient {
         val leaderJson = GsonJsonParser().parseMap(getJSONFromUrl(electorPath))
         val leader = leaderJson["name"]
         val hostname: String = InetAddress.getLocalHost().hostName
-        println(hostname)
+        log.info("Hostname: $hostname, Leader: $leader")
         return hostname == leader
+    }
+
+    companion object {
+        private val log = loggerFor<LeaderElectionClient>()
     }
 }

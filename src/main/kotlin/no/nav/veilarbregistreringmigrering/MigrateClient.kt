@@ -18,7 +18,7 @@ class MigrateClient {
         try {
             restClient.newCall(request).execute().use { response ->
                 if (response.code() == 404) {
-                    println("Fant ikke tabell")
+                    log.error("Fant ikke tabell")
                 }
                 if (!response.isSuccessful) {
                     throw RuntimeException(
@@ -29,7 +29,7 @@ class MigrateClient {
 
                 response.body()?.let { body ->
                     val databaserader = Gson().fromJson<List<MutableMap<String, Any>>>(body.string())
-                    println(databaserader)
+                    log.info(databaserader.toString())
                     return databaserader
                 } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
             }
@@ -44,7 +44,7 @@ class MigrateClient {
                 .execute().use { response ->
                 response.body()?.let { body ->
                     val str = body.string()
-                    println("${tabell.name}.json: $str")
+                    log.info("${tabell.name}.json: $str")
                     return Gson().fromJson(str)
                 } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
             }
@@ -70,5 +70,7 @@ class MigrateClient {
 
         inline fun <reified T> Gson.fromJson(json: String): T = fromJson(json, object: TypeToken<T>() {}.type)
         val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")!!
+
+        private val log = loggerFor<MigrateClient>()
     }
 }
