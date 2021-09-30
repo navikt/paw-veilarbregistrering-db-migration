@@ -43,8 +43,6 @@ spec:
       rules:
         - application: pto-proxy
           namespace: pto
-      external:
-        - host: veilarbregistrering.dev.intern.nav.no
 
   gcp:
     sqlInstances:
