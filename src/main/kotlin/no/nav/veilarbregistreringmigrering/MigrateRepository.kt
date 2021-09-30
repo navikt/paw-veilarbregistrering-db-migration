@@ -117,9 +117,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
             db.batchUpdate(jpaSQL, rader.toTypedArray())
 
         } catch (e: Exception) {
-            e.printStackTrace()
-            log.error(e.javaClass.name + ": " + e.message)
-            exitProcess(0)
+            log.error(e.javaClass.name + ": " + e.message, e)
         }
     }
 
