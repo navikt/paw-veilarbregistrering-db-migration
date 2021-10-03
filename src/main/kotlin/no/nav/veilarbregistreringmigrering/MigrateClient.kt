@@ -40,7 +40,7 @@ class MigrateClient {
 
     fun hentSjekkerForTabell(tabell: TabellNavn): List<Map<String, Any>> {
         try {
-            restClient.newCall(buildRequest("${VEILARBREGISTRERING_URL}/api/migrering/sjekksum?tabellNavn=${tabell.name}"))
+            restClient.newCall(buildRequest("${VEILARBREGISTRERING_URL}/api/migrering/sjekksum/${tabell.name}"))
                 .execute().use { response ->
                 response.body()?.let { body ->
                     val str = body.string()
