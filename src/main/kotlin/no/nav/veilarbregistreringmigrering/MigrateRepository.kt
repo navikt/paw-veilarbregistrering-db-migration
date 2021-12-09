@@ -5,6 +5,7 @@ import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
 import no.nav.veilarbregistreringmigrering.registrering.Status
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.jdbc.datasource.SingleConnectionDataSource
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -140,8 +141,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
     }
 
     fun hentRaderSomKanTrengeOppdatering(): List<RegistreringTilstand> {
-        val sql = "create temp table update_tilstander as " +
-                "select * from registrering_tilstand " +
+        val sql = "select * from registrering_tilstand " +
                 "where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND') limit 1000"
 
         return db.query(sql, emptyMap<String, Any>(), registreringTilstandRowMapper)
