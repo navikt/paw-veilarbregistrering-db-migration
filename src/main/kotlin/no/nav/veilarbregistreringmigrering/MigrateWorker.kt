@@ -1,5 +1,6 @@
 package no.nav.veilarbregistreringmigrering
 
+import no.nav.veilarbregistreringmigrering.log.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -28,9 +29,9 @@ class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @
     }
 
     fun finnOppdaterteTilstander() {
-//        val trengerOppdatering = repository.hentRaderSomKanTrengeOppdatering()
-//
-//        val rader = migrateClient.hentOppdaterteRegistreringStatuser(trengerOppdatering)
-//        repository.oppdaterRader()
+        val trengerOppdatering = repository.hentRaderSomKanTrengeOppdatering()
+
+        val rader = migrateClient.hentOppdaterteRegistreringStatuser(trengerOppdatering)
+        logger.info("Hentet oppdaterte rader:", rader)
     }
 }

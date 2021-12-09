@@ -3,8 +3,11 @@ package no.nav.veilarbregistreringmigrering
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
+import no.nav.veilarbregistreringmigrering.registrering.Status
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.MediaType
 import org.springframework.stereotype.Component
 import java.io.IOException
 import java.lang.System.getenv
@@ -70,22 +73,39 @@ class MigrateClient {
             0
         }
 
+    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>): Map<Status, List<String>> {
+        val map = trengerOppdatering.associate { it.id to it.status }
 
-    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>) {
-        /*trengerOppdatering.slice(0..10000)
-
-        restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/oppdaterteTilstanderFor"))*/
+        return try {
+            restClient.newCall(
+                requestBuilder("$VEILARBREGISTRERING_URL/api/migrering/registrering-tilstand/hent-oppdaterte-statuser")
+                    .post(RequestBody.create(MediaType.parse("application/json"), Gson().toJson(map)))
+                    .build()
+            ).execute().use { response ->
+                response.body()?.let { body ->
+                    val bodyString = body.string()
+                    log.info("Oppdaterte tilstander: $bodyString")
+                    Gson().fromJson<Map<Status, List<String>>>(bodyString)
+                }
+            } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
+        } catch (e: IOException) {
+            log.error("Error while getting updated statuses", e)
+            return emptyMap()
+        }
     }
 
 
     companion object {
         private fun buildRequest(url: String) =
+                requestBuilder(url)
+                .build()
+
+        private fun requestBuilder(url: String) =
             Request.Builder()
                 .url(url)
                 .header("accept", "application/json")
                 .header("x_consumerId", "veilarbregistrering")
                 .header("x-token", getenv("MIGRATION_TOKEN"))
-                .build()
 
         private val restClient = OkHttpClient.Builder()
             .readTimeout(60L, TimeUnit.SECONDS)

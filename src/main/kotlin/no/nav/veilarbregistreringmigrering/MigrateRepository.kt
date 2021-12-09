@@ -140,9 +140,11 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
     }
 
     fun hentRaderSomKanTrengeOppdatering(): List<RegistreringTilstand> {
-        val sql = "select * from registrering_tilstand where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND')"
-        return db.query(sql, emptyMap<String, Any>(), registreringTilstandRowMapper)
+        val sql = "create temp table update_tilstander as " +
+                "select * from registrering_tilstand " +
+                "where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND') limit 1000"
 
+        return db.query(sql, emptyMap<String, Any>(), registreringTilstandRowMapper)
     }
 
     fun hentSjekkerForTabell(tabellNavn: TabellNavn): List<Map<String, Any>> {
