@@ -60,8 +60,10 @@ class MigrateClient {
                 buildRequest("$VEILARBREGISTRERING_URL/api/migrering/registrering-tilstand/antall-potensielt-oppdaterte")
             )
                 .execute().use { response ->
-                    response.body()?.let {
-                        Gson().fromJson<Map<String, Int>>(it.string())
+                    response.body()?.let { body ->
+                        val bodyString = body.string()
+                        log.info("Antall tilstander: $bodyString")
+                        Gson().fromJson<Map<String, Int>>(bodyString)
                     }
                 }?.get("antall") ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
         } catch (e: IOException) {
