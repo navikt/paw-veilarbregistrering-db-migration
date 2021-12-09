@@ -21,5 +21,16 @@ class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @
             val rader = migrateClient.hentNesteBatchFraTabell(it, sisteIndex)
             repository.settInnRader(it, rader)
         }
+
+        if (migrateClient.hentAntallPotensieltOppdaterteTilstander() != repository.antallRaderSomKanTrengeOppdatering()) {
+            finnOppdaterteTilstander()
+        }
+    }
+
+    fun finnOppdaterteTilstander() {
+//        val trengerOppdatering = repository.hentRaderSomKanTrengeOppdatering()
+//
+//        val rader = migrateClient.hentOppdaterteRegistreringStatuser(trengerOppdatering)
+//        repository.oppdaterRader()
     }
 }

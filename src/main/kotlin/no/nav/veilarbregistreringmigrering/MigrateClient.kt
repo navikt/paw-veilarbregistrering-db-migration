@@ -2,6 +2,7 @@ package no.nav.veilarbregistreringmigrering
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.stereotype.Component
@@ -51,6 +52,27 @@ class MigrateClient {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
+    }
+
+    fun hentAntallPotensieltOppdaterteTilstander(): Int =
+        try {
+            restClient.newCall(
+                buildRequest("$VEILARBREGISTRERING_URL/api/migrering/registrering-tilstand/antall-potensielt-oppdaterte")
+            )
+                .execute().use { response ->
+                    response.body()?.let {
+                        Gson().fromJson<Map<String, Int>>(it.string())
+                    }
+                }?.get("antall") ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
+        } catch (e: IOException) {
+            0
+        }
+
+
+    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>) {
+        /*trengerOppdatering.slice(0..10000)
+
+        restClient.newCall(buildRequest("$VEILARBREGISTRERING_URL/api/migrering/oppdaterteTilstanderFor"))*/
     }
 
 

@@ -1,10 +1,15 @@
 package no.nav.veilarbregistreringmigrering
 
 import no.nav.veilarbregistreringmigrering.TabellNavn.*
+import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
+import no.nav.veilarbregistreringmigrering.registrering.Status
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.ZonedDateTime
-import kotlin.system.exitProcess
 
 enum class TabellNavn(val idKolonneNavn: String) {
     BRUKER_REGISTRERING("BRUKER_REGISTRERING_ID"),
@@ -121,6 +126,25 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
         }
     }
 
+    fun antallRaderSomKanTrengeOppdatering(): Int {
+        return try {
+            val sql = "select count(*) as antall from registrering_tilstand " +
+                    "where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND')"
+            db.queryForObject(sql, emptyMap<String, Any>()) { rs: ResultSet, _ ->
+                rs.getInt("antall")
+            }!!
+        } catch (e: SQLException) {
+            log.error("Error counting number of potentially updated rows", e)
+            0
+        }
+    }
+
+    fun hentRaderSomKanTrengeOppdatering(): List<RegistreringTilstand> {
+        val sql = "select * from registrering_tilstand where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND')"
+        return db.query(sql, emptyMap<String, Any>(), registreringTilstandRowMapper)
+
+    }
+
     fun hentSjekkerForTabell(tabellNavn: TabellNavn): List<Map<String, Any>> {
         val sql = when (tabellNavn) {
             BRUKER_PROFILERING -> profileringSjekkSql
@@ -134,6 +158,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
         return db.jdbcTemplate.queryForList(sql)
     }
+
 
     companion object {
         private const val ANTALL = "antall"
@@ -191,5 +216,22 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
         count(distinct ekstern_oppgave_id) as unike_oppgave_id,
         floor(avg(ekstern_oppgave_id)) as gjsnitt_oppgave_id from oppgave
         """
+
+        private val registreringTilstandRowMapper: RowMapper<RegistreringTilstand> = RowMapper { rs, _ ->
+            RegistreringTilstand(
+                rs.getLong(ID),
+                rs.getLong(BRUKER_REGISTRERING_ID),
+                rs.getTimestamp(OPPRETTET).toLocalDateTime(),
+                rs.getTimestamp(SIST_ENDRET)
+                    ?.let(Timestamp::toLocalDateTime),
+                Status.valueOf(rs.getString(STATUS))
+            )
+        }
+
+        const val ID = "ID"
+        const val BRUKER_REGISTRERING_ID = "BRUKER_REGISTRERING_ID"
+        const val OPPRETTET = "OPPRETTET"
+        const val SIST_ENDRET = "SIST_ENDRET"
+        const val STATUS = "STATUS"
     }
 }
