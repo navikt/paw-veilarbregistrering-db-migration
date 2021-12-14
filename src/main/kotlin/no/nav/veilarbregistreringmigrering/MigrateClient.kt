@@ -1,13 +1,14 @@
 package no.nav.veilarbregistreringmigrering
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
-import no.nav.veilarbregistreringmigrering.registrering.Status
+import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import okhttp3.MediaType
 import org.springframework.stereotype.Component
 import java.io.IOException
 import java.lang.System.getenv
@@ -85,7 +86,7 @@ class MigrateClient {
                 response.body()?.let { body ->
                     val bodyString = body.string()
                     log.info("Oppdaterte tilstander: $bodyString")
-                    Gson().fromJson<List<RegistreringTilstand>>(bodyString)
+                    mapper.readValue(bodyString)
                 }
             } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
         } catch (e: IOException) {
@@ -112,6 +113,7 @@ class MigrateClient {
             .build()
 
         inline fun <reified T> Gson.fromJson(json: String): T = fromJson(json, object: TypeToken<T>() {}.type)
+        val mapper = jacksonObjectMapper()
         val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")!!
 
         private val log = loggerFor<MigrateClient>()
