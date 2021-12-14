@@ -161,11 +161,18 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
         return db.jdbcTemplate.queryForList(sql)
     }
 
-    fun oppdaterTilstand(tilstand: Map<String, Any>) {
+    fun oppdaterTilstander(tilstander: List<RegistreringTilstand>) {
+        val params = tilstander.map { tilstand ->
+            mapOf(
+                "id" to tilstand.id,
+                "status" to tilstand.status,
+                "sist_endret" to tilstand.sistEndret,
+            )
+        }
 
-        logger.info("I ferd med å oppdatere rad med id ${tilstand["id"].toString()}: status=${tilstand["status"]} sist_endret=${tilstand["sistEndret"]}")
-        logger.info("Alle keys: ${tilstand.keys}")
-        //val sql = "update registrering_tilstand set status = :status, sist_endret = :updated_at where id = :"
+        val sql = "update registrering_tilstand set status = :status, sist_endret = :sist_endret where id = :id"
+
+        db.batchUpdate(sql, params.toTypedArray())
     }
 
 
