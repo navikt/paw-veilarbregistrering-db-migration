@@ -34,9 +34,7 @@ class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @
 
         val rader = migrateClient.hentOppdaterteRegistreringStatuser(trengerOppdatering)
 
-        rader.values.flatten().forEach { tilstand ->
-            repository.oppdaterTilstand(tilstand)
-        }
+        repository.oppdaterTilstander(rader.values.flatten())
 
         logger.info("Hentet oppdaterte rader:", rader)
     }
