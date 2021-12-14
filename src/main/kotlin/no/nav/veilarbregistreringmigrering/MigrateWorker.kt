@@ -35,7 +35,7 @@ class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @
         val rader = migrateClient.hentOppdaterteRegistreringStatuser(trengerOppdatering)
 
         logger.info("Hentet oppdaterte rader:", rader)
-        val antallOppdaterte = repository.oppdaterTilstander(rader.values.flatten())
+        val antallOppdaterte = repository.oppdaterTilstander(rader)
 
         if (rader.size == antallOppdaterte.size) logger.info("Oppdaterte ${antallOppdaterte.size} rader")
         else logger.warn("Oppdaterte ${antallOppdaterte.size} rader, men mottok ${rader.size} fra oracle")

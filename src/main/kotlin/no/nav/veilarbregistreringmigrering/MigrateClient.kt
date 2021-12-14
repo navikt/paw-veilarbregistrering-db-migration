@@ -107,7 +107,7 @@ class MigrateClient {
                 .header("x-token", getenv("MIGRATION_TOKEN"))
 
         private val restClient = OkHttpClient.Builder()
-            .readTimeout(60L, TimeUnit.SECONDS)
+            .readTimeout(240L, TimeUnit.SECONDS)
             .followRedirects(false)
             .build()
 
