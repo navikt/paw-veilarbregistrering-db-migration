@@ -163,7 +163,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
     fun oppdaterTilstand(tilstand: Map<String, Any>) {
 
-        logger.info("I ferd med å oppdatere rad med id ${tilstand["id"]}: status=${tilstand["status"]} sist_endret=${tilstand["sist_endret"]}")
+        logger.info("I ferd med å oppdatere rad med id ${tilstand["id"].toString()}: status=${tilstand["status"]} sist_endret=${tilstand["sistEndret"]}")
         logger.info("Alle keys: ${tilstand.keys}")
         //val sql = "update registrering_tilstand set status = :status, sist_endret = :updated_at where id = :"
     }
