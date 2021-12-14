@@ -1,7 +1,5 @@
 package no.nav.veilarbregistreringmigrering
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
@@ -74,7 +72,7 @@ class MigrateClient {
             0
         }
 
-    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>): List<RegistreringTilstand> {
+    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>): List<Map<String, Any>> {
         val map = trengerOppdatering.associate { it.id to it.status }
 
         return try {
@@ -86,7 +84,7 @@ class MigrateClient {
                 response.body()?.let { body ->
                     val bodyString = body.string()
                     log.info("Oppdaterte tilstander: $bodyString")
-                    mapper.readValue(bodyString)
+                    Gson().fromJson(bodyString)
                 }
             } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
         } catch (e: IOException) {
@@ -113,7 +111,6 @@ class MigrateClient {
             .build()
 
         inline fun <reified T> Gson.fromJson(json: String): T = fromJson(json, object: TypeToken<T>() {}.type)
-        val mapper = jacksonObjectMapper()
         val VEILARBREGISTRERING_URL = getenv("VEILARBREGISTRERING_URL")!!
 
         private val log = loggerFor<MigrateClient>()
