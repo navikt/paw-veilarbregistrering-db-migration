@@ -73,7 +73,7 @@ class MigrateClient {
             0
         }
 
-    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>): Map<Status, List<String>> {
+    fun hentOppdaterteRegistreringStatuser(trengerOppdatering: List<RegistreringTilstand>): Map<Status, List<Map<String,Any>>> {
         val map = trengerOppdatering.associate { it.id to it.status }
 
         return try {
@@ -85,7 +85,7 @@ class MigrateClient {
                 response.body()?.let { body ->
                     val bodyString = body.string()
                     log.info("Oppdaterte tilstander: $bodyString")
-                    Gson().fromJson<Map<Status, List<String>>>(bodyString)
+                    Gson().fromJson<Map<Status, List<Map<String, Any>>>>(bodyString)
                 }
             } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
         } catch (e: IOException) {

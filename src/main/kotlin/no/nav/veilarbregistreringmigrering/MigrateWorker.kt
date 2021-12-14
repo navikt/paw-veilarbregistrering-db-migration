@@ -23,15 +23,21 @@ class MigrateWorker(@Autowired val leaderElectionClient: LeaderElectionClient, @
             repository.settInnRader(it, rader)
         }
 
-        if (migrateClient.hentAntallPotensieltOppdaterteTilstander() != repository.antallRaderSomKanTrengeOppdatering()) {
-            finnOppdaterteTilstander()
+        val antallSomKanTrengeOppdatering = repository.antallRaderSomKanTrengeOppdatering()
+        if (migrateClient.hentAntallPotensieltOppdaterteTilstander() != antallSomKanTrengeOppdatering) {
+            hentOgOppdaterRegistreringTilstander()
         }
     }
 
-    fun finnOppdaterteTilstander() {
+    fun hentOgOppdaterRegistreringTilstander() {
         val trengerOppdatering = repository.hentRaderSomKanTrengeOppdatering()
 
         val rader = migrateClient.hentOppdaterteRegistreringStatuser(trengerOppdatering)
+
+        rader.values.flatten().forEach { tilstand ->
+            repository.oppdaterTilstand(tilstand)
+        }
+
         logger.info("Hentet oppdaterte rader:", rader)
     }
 }

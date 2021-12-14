@@ -1,11 +1,11 @@
 package no.nav.veilarbregistreringmigrering
 
 import no.nav.veilarbregistreringmigrering.TabellNavn.*
+import no.nav.veilarbregistreringmigrering.log.logger
 import no.nav.veilarbregistreringmigrering.registrering.RegistreringTilstand
 import no.nav.veilarbregistreringmigrering.registrering.Status
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.datasource.SingleConnectionDataSource
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -142,7 +142,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
     fun hentRaderSomKanTrengeOppdatering(): List<RegistreringTilstand> {
         val sql = "select * from registrering_tilstand " +
-                "where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND') limit 1000"
+                "where status not in ('PUBLISERT_KAFKA', 'OPPRINNELIG_OPPRETTET_UTEN_TILSTAND') limit 10"
 
         return db.query(sql, emptyMap<String, Any>(), registreringTilstandRowMapper)
     }
@@ -159,6 +159,13 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
         }
 
         return db.jdbcTemplate.queryForList(sql)
+    }
+
+    fun oppdaterTilstand(tilstand: Map<String, Any>) {
+
+        logger.info("I ferd med å oppdatere rad med id ${tilstand["id"]}: status=${tilstand["status"]} sist_endret=${tilstand["sist_endret"]}")
+        logger.info("Alle keys: ${tilstand.keys}")
+        //val sql = "update registrering_tilstand set status = :status, sist_endret = :updated_at where id = :"
     }
 
 
