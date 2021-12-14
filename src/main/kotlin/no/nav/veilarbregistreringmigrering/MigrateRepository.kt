@@ -161,7 +161,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
         return db.jdbcTemplate.queryForList(sql)
     }
 
-    fun oppdaterTilstander(tilstander: List<RegistreringTilstand>) {
+    fun oppdaterTilstander(tilstander: List<RegistreringTilstand>): List<Int> {
         val params = tilstander.map { tilstand ->
             mapOf(
                 "id" to tilstand.id,
@@ -172,7 +172,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
         val sql = "update registrering_tilstand set status = :status, sist_endret = :sist_endret where id = :id"
 
-        db.batchUpdate(sql, params.toTypedArray())
+        return db.batchUpdate(sql, params.toTypedArray()).asList()
     }
 
 
