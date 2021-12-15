@@ -166,7 +166,14 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
             mapOf(
                 "id" to tilstand["ID"],
                 "status" to tilstand["STATUS"],
-                "sist_endret" to tilstand["SIST_ENDRET"],
+                "sist_endret" to (tilstand["SIST_ENDRET"]?.let {
+                    ZonedDateTime.parse(it.toString()).toLocalDateTime()
+                }
+                    ?: run {
+                        logger.warn("Fant oppdatert tilstand uten SIST_ENDRET")
+                        null
+                    })
+
             )
         }
 
