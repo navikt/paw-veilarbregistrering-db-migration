@@ -32,7 +32,7 @@ class MigrateClient {
 
                 response.body()?.let { body ->
                     val databaserader = Gson().fromJson<List<MutableMap<String, Any>>>(body.string())
-                    log.info(databaserader.toString())
+                    log.info("Hentet ${databaserader.size} rader for ${tabell} fra index ${sisteIndex}.")
                     return databaserader
                 } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
             }
