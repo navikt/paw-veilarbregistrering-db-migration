@@ -179,7 +179,7 @@ class MigrateRepository(val db: NamedParameterJdbcTemplate) {
 
         val sql = "update registrering_tilstand set status = :status, sist_endret = :sist_endret where id = :id"
 
-        logger.info("I ferd med å gjøre batch update med $params")
+        logger.info("I ferd med å gjøre batch update for ${params.size} rader")
         return db.batchUpdate(sql, params.toTypedArray()).asList()
     }
 
