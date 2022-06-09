@@ -83,8 +83,9 @@ class MigrateClient {
             ).execute().use { response ->
                 response.body()?.let { body ->
                     val bodyString = body.string()
-                    log.info("Oppdaterte tilstander: $bodyString")
-                    Gson().fromJson(bodyString)
+                    val oppdaterte_tilstander: List<Map<String, Any>> = Gson().fromJson(bodyString)
+                    log.info("Hentet ${oppdaterte_tilstander.size} oppdaterte tilstander")
+                    return oppdaterte_tilstander
                 }
             } ?: throw RuntimeException("Forventet respons med body, men mottok ingenting")
         } catch (e: IOException) {
